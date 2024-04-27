@@ -1,128 +1,58 @@
-console.log("index.js");
+let express = require("express");
+const cors = require('cors');
+let DatabaseConnection = require("./src/database/DatabaseConnection");
 
-const mongoDb = require("mongodb");
-const express = require("express");
+let url = 'mongodb://localhost:27017';
 
-const app = express();
-
-app.get("/", (req, res) => {
-   
-
-    const url = 'mongodb://localhost:27017';
-    const client = new mongoDb.MongoClient(url);
+DatabaseConnection.getInstance().setUrl(url);
 
 
-    client.connect().then(async () => {
-        console.log("Connected to MongoDB");
+let app = express();
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded());
 
-        const db = client.db("Webshop");
-        const collection = db.collection("orders");
+app.get("/orders", async (request, response) => {
+    
+    let orders = await DatabaseConnection.getInstance().getAllOrders();
+    response.json(orders);
 
-      /*   return collection.insertMany([{a: 1}, {a: 2}, {a: 3, name: "Test product", price: 123 }]).then(() => {
-            console.log("Inserted documents into the collection"); */
+    }
+);
 
-        /*     return collection.find({}).toArray().then((results) => {
-                console.log("Found result in the collection");
-                res.json(results);
-              
-            }) */
-            const pipeline = [
-                        {
-                        $lookup:
-                            /**
-                             * from: The target collection.
-                             * localField: The local join field.
-                             * foreignField: The target join field.
-                             * as: The name for the results.
-                             * pipeline: Optional pipeline to run on the foreign collection.
-                             * let: Optional variables to use in the pipeline field stages.
-                             */
-                            {
-                            from: "lineItems",
-                            localField: "order",
-                            foreignField: "id",
-                            as: "lineItems",
-                            pipeline: [
-                                {
-                                $lookup: {
-                                    from: "products",
-                                    localField: "id",
-                                    foreignField: "product",
-                                    as: "linkedProduct",
-                                },
-                                },
-                                {
-                                $addFields:
-                                    /**
-                                     * newField: The new field name.
-                                     * expression: The new field expression.
-                                     */
-                                    {
-                                    linkedProduct: {
-                                        $first: "$linkedProduct",
-                                    },
-                                    },
-                                },
-                            ],
-                            },
-                        },
-                        {
-                        $lookup:
-                            /**
-                             * from: The target collection.
-                             * localField: The local join field.
-                             * foreignField: The target join field.
-                             * as: The name for the results.
-                             * pipeline: Optional pipeline to run on the foreign collection.
-                             * let: Optional variables to use in the pipeline field stages.
-                             */
-                            {
-                            from: "customers",
-                            localField: "id",
-                            foreignField: "customers",
-                            as: "linkedCustomer",
-                            },
-                        },
-                        {
-                        $addFields:
-                            /**
-                             * newField: The new field name.
-                             * expression: The new field expression.
-                             */
-                            {
-                            linkedCustomer: {
-                                $first: "$linkedCustomer",
-                            },
-                            calculatedTotal: {
-                                $sum: "$lineItems.totalPrice",
-                            },
-                            },
-                        },
-                    ]
+app.get("/products", async (request, response) => {
 
+    let products = await DatabaseConnection.getInstance().getProducts();
 
-            const aggregate = collection.aggregate(pipeline); 
+    response.json(products);
 
-            const orders = [];
+    }
+);
 
-            for await ( let document of aggregate ) {
-                orders.push(document);
-            }
+app.post("/create-order", async (request, response) => {
+    
+    //TODO: create customer
+    let orderId = await DatabaseConnection.getInstance().saveOrder(request.body.lineItems, request.body.email)
 
-            return orders;
-            
-            }).then((orders) => {
-                res.json(orders)
-            }) .finally(() => {
-                client.close()
-                
-                });
-            })
+    response.json({"id": orderId});
 
+});
 
+app.post("/products", async (request, response) => {
+    
+    let id = await DatabaseConnection.getInstance().createProduct();
+    await DatabaseConnection.getInstance().updateProduct(id, request.body);
 
-   
+    response.json({"id": id});
 
+});
+
+app.post("/products/:id", async (request, response) => {
+    
+    await DatabaseConnection.getInstance().updateProduct(request.params.id, request.body);
+
+    response.json({"id": request.params.id});
+
+});
 
 app.listen(3000);
-

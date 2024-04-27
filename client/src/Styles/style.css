@@ -1,0 +1,105 @@
+.glass {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(26px); 
+    background: rgba(255, 255, 255, 0.4); 
+  }
+  
+
+
+.hero {
+    height: 100%;
+}
+
+.video {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    left: 0;
+    top: 0;
+    object-fit: cover;
+}
+
+.homeSection-1-1-bg {
+    background-color: #0dbdad;
+}
+
+.homeSection-1-2-bg {
+    background-color: #007073;
+}
+
+.home-section-3-bg {
+    background-image: url('./../assets/homeSection3Img.png');
+    background-size: contain;
+    min-height: 100vh;
+    
+}
+/* 
+.home-box-bg {
+    background-image: url('./../assets/45.png');
+    background-size:contain;
+    min-height: fit-content;
+    background-repeat: no-repeat;
+    background-position: bottom;
+    background-color: white;
+
+} */
+
+.fish-logo {
+    width: 15%;
+}
+
+.products-bg {
+    background-color: #f6f7fa;
+}
+
+.products-container-bg,
+.shoppingCart-container-bg {
+    background-color: black;
+}
+
+.shoppingCart-bg {
+background-color: #f6f7fa;
+min-height: 100vh;
+}
+
+.success-bg {
+    background-image: url('./../assets/40.png');
+    background-size:cover;
+    min-height: 100vh;
+    background-repeat: no-repeat;
+    background-position: bottom;
+    background-color: white;
+
+}
+
+.contact-bg {
+    background-image: url('./../assets/39.png');
+    background-size:cover;
+    min-height: 100vh;
+    background-repeat: no-repeat;
+    background-position: bottom;
+    background-color: white;
+
+}
+
+.card-image-img {
+    object-fit: cover;
+}
+
+.home-sec-1-img {
+    object-fit: contain;
+   
+}
+
+.buy-btn,
+.checkout-btn,
+.success-btn,
+.hompage-btn {
+    background-color: #0dbdad;
+    border: none;
+}
+
+.home-content {
+    margin-top: 12%;
+}
+
