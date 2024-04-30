@@ -1,6 +1,23 @@
+import { motion, useAnimation } from "framer-motion"
+import { useInView } from 'react-intersection-observer';
+import { useEffect } from "react";
 import { StarRating } from "./StarRating"
 
 export const HomeSection3 = () => {
+
+  const controls = useAnimation();
+  const [ref, inView] = useInView({
+   triggerOnce: true,
+   threshold: 0.6 
+   });
+
+useEffect(() => {
+ if (inView) {
+   controls.start("visible");
+ }
+}, [controls, inView]);
+
+
     return (
         <div className="home-section-3-bg w-full mb-10">
              <div className=" w-full mt-20 p-8 text-white">
@@ -11,9 +28,19 @@ export const HomeSection3 = () => {
             </h1>
             </div>
 
-            <div className="container mx-auto px-4 py-8">
+
+            <motion.div
+        ref={ref}
+        initial="hidden"
+        animate={controls}
+        variants={{
+          visible: { opacity: 1, x: 0 },
+          hidden: { opacity: 0, x: -100 }
+        }}
+        transition={{ duration: 1.2, type: "tween" }}
+      >
+<div className="container mx-auto px-4 py-8">
   <div className="flex justify-center mx-auto gap-10 pt-20 ">
-   
     <div className="max-w-sm rounded overflow-hidden shadow-lg glass">
       <div className="px-6 py-4">
       <StarRating rating={5} />
@@ -47,6 +74,7 @@ export const HomeSection3 = () => {
     </div>
   </div>
 </div>
+</motion.div>
         </div>
     )
 
