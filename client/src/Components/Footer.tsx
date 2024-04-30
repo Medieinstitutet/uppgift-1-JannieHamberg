@@ -1,6 +1,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFacebook, faInstagram, faSquareXTwitter } from '@fortawesome/free-brands-svg-icons';
+import { Link } from 'react-router-dom';
 export const Footer = () => { 
 
     return (
@@ -15,13 +16,22 @@ export const Footer = () => {
             <div className="w-full md:w-1/3 text-black text-center pt-0 md:pt-4 md:pb-6">
                 <ul className="text-lg leading-loose">
                     <li>
-                        <a href="#">Kontakt</a>
+                    <Link to="/contact" className="py-2 hover:text-sky-700">Contact</Link>
                     </li>
                     <li>
-                        <a href="#">Hitta</a>
+                    <Link to="/about" className="py-2 hover:text-sky-700">About us</Link>
                     </li>
                     <li>
-                        <a href="#">Om oss</a>
+                    <Link to="/policy" className="py-2 hover:text-sky-700">Policy</Link>
+                    </li>
+                    <li>
+                    <Link to="/shipping" className="py-2 hover:text-sky-700">Shipping</Link>
+                    </li>
+                    <li>
+                    <Link to="/faq" className="py-2 hover:text-sky-700">FAQ</Link>
+                    </li>
+                    <li className='text-white'>
+                    <Link to="/admin" className="py-2 hover:text-sky-700">Admin</Link>
                     </li>
                 </ul>
                 

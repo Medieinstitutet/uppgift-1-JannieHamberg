@@ -94,9 +94,18 @@ min-height: 100vh;
 .buy-btn,
 .checkout-btn,
 .success-btn,
-.hompage-btn {
+.hompage-btn,
+.filter-btn {
     background-color: #0dbdad;
     border: none;
+}
+
+.buy-btn:hover,
+.checkout-btn:hover,
+.homepage-btn:hover,
+.success-btn:hover,
+.filter-btn:hover {
+  background-color: #007073; /* Color when hovered */
 }
 
 .home-content {
