@@ -118,13 +118,16 @@ async calculateTotalPrice(lineItems) {
         let db = this.client.db("Webshop");
         let collection = db.collection("products");
 
+        console.log("Updating product with ID:", id, "Data:", productData);
+
         await collection.updateOne({"_id": new mongodb.ObjectId(id)}, {"$set": {
             "name": productData["name"],
             "price": productData["price"],
             "description": productData["description"],
+            "image": productData["image"],
             "amountInStock": productData["amountInStock"],
             "status": productData["status"],
-            "category": productData["category"] ? new mongodb.ObjectId(productData["category"]) : null
+            "category": productData["category"] ? (productData["category"]._id ? new mongodb.ObjectId(productData["category"]._id) : new mongodb.ObjectId(productData["category"])) : null
         }});
     }
 

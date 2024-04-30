@@ -8,15 +8,16 @@ import { IProduct } from '../Interfaces/IProduct';
 import { CustomerAdmin } from './CustomersAdmin'; 
 import { OrdersAdmin } from './OrdersAdmin';
 import { ProductsAdmin } from './ProductsAdmin';
+import { EditProductModal } from '../Modals/EditProduct';
 
 export const Admin: React.FC = () => {
   const [products, setProducts] = useState<IProduct[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<IProduct | null>(null);
   const [orders, setOrders] = useState<IOrder[]>([]);
   const [customers, setCustomers] = useState<ICustomer[]>([]); 
   const navigate = useNavigate();
 
   useEffect(() => {
-    
     axios.get('http://localhost:3000/products')
       .then(response => setProducts(response.data))
       .catch(error => console.error('Error fetching products', error));
@@ -37,21 +38,32 @@ export const Admin: React.FC = () => {
       .catch(error => console.error('Error fetching customers', error));
   }, []); 
 
-  
-  const editProduct = (product: IProduct) => {
-    return product;
-  };
+    const editProduct = (product: IProduct) => {
+        setSelectedProduct(product);
+    };
 
-  const deleteProduct = (_id: string) => {
-    return _id;
-  };
+    const saveProduct = async (product: IProduct) => {
+        try {
+            const response = await axios.put(`http://localhost:3000/products/${product._id}`, product);
+            setProducts(products.map(p => p._id === product._id ? {...p, ...product} : p));
+            setSelectedProduct(null);
+            console.log('Product updated', response.data);
+        } catch (error) {
+            console.error('Error updating product', error);
+        }
+    };
 
+    const closeEditModal = () => {
+        setSelectedProduct(null);
+    };
+    const deleteProduct = (_id: string) => {
+        return _id;
+    };
 
      const viewOrderDetails = (_id: string) => {
 
     navigate(`/orders/${_id}`);
   }; 
-
 
    const viewCustomerProfile = (customerId: string) => {
     
@@ -66,6 +78,13 @@ export const Admin: React.FC = () => {
         <h2 className="text-2xl font-semibold leading-tight">Customers</h2>
          <CustomerAdmin customers={customers} onViewProfile={viewCustomerProfile} />
          <h2 className="text-2xl font-semibold leading-tight">Products</h2>
+         {selectedProduct && (
+                <EditProductModal
+                    product={selectedProduct}
+                    onSave={saveProduct}
+                    onClose={closeEditModal}
+                />
+            )}
         <ProductsAdmin products={products} onEdit={editProduct} onDelete={deleteProduct} />
       </div>
     </div>
