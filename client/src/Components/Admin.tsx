@@ -42,14 +42,14 @@ export const Admin: React.FC = () => {
     return product;
   };
 
-  const deleteProduct = (_Id: string) => {
-    return _Id;
+  const deleteProduct = (_id: string) => {
+    return _id;
   };
 
 
-     const viewOrderDetails = (_Id: string) => {
+     const viewOrderDetails = (_id: string) => {
 
-    navigate(`/orders/${_Id}`);
+    navigate(`/orders/${_id}`);
   }; 
 
 
