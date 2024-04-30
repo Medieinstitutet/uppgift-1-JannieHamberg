@@ -90,13 +90,16 @@ app.post("/products", async (request, response) => {
 
 });
 
-app.post("/products/:id", async (request, response) => {
-    
-    await DatabaseConnection.getInstance().updateProduct(request.params.id, request.body);
-
-    response.json({"id": request.params.id});
-
+app.put('/products/:id', async (request, response) => {
+    try {
+        await DatabaseConnection.getInstance().updateProduct(request.params.id, request.body);
+        response.json({"id": request.params.id, "message": "Product updated successfully"});
+    } catch (error) {
+        console.error('Error updating product', error);
+        response.status(500).json({"message": "Error updating product", error});
+    }
 });
+
 
 app.get("/active-products", async (request, response) => {
 
