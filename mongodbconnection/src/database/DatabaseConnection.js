@@ -1,4 +1,6 @@
 const mongodb = require("mongodb");
+const { ObjectId } = require('mongodb');
+
 
 let instance = null;
 
@@ -37,9 +39,6 @@ async createCustomer(email) {
   let result = await customersCollection.insertOne({ _id: email });
   return result.insertedId;
 }
-
-
-
 
 
 async saveOrder(lineItems, customerEmail) {
@@ -101,16 +100,29 @@ async calculateTotalPrice(lineItems) {
 
 
 
-    async createProduct() {
-        await this.connect();
 
-        let db = this.client.db("Webshop");
-        let collection = db.collection("products");
 
-        let result = await collection.insertOne({"status": "draft", "name": null, "description": null, "image": null, "amountInStock": 0, "price": 0, "category": null});
+async createProduct(productData) {
+  await this.connect();
+  let db = this.client.db("Webshop");
+  let collection = db.collection("products");
 
-        return result.insertedId;
-    }
+  const category = productData.category ? new ObjectId(productData.category._id) : null;
+
+  let product = {
+      name: productData.name || '',
+      price: productData.price || 0,
+      description: productData.description || '',
+      image: productData.image || '',
+      amountInStock: productData.amountInStock || 0,
+      status: productData.status || 'draft',
+      category: category  
+  };
+
+  let result = await collection.insertOne(product);
+  return result.insertedId;
+}
+
 
     async updateProduct(id, productData) {
         await this.connect();
