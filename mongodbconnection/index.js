@@ -29,31 +29,36 @@ app.get("/products", async (request, response) => {
     }
 );
 
-/* app.get("/fish", async (request, response) => {
+
+  app.get('/categories', async (request, response) => {
     try {
-        const allFish = await DatabaseConnection.getInstance().getFish();
-        const fish = await DatabaseConnection.getInstance().getProductsByCategory(allFish);
-        response.json(fish);
-
+        let categories = await DatabaseConnection.getInstance().getCategories();
+        response.json(categories);
     } catch (error) {
-        response.status(500).json({ message: "An error occurred", error: error });
+        response.status(500).json({ message: "An error occurred while fetching categories", error: error.message });
     }
-   
-}); */
+});
 
-app.get("/filtered-products", async (request, response) => {
-    try {
-      const categoryName = request.query.category;
-  
-      const products = await DatabaseConnection.getInstance().getProductsByCategory(categoryName);
-  
-      response.json(products);
-    } catch (error) {
-      response.status(500).json({ message: "An error occurred", error: error });
-    }
-  });
-  
+    app.get('/products/category/:categoryId', async (req, res) => {
+        try {
+        const products = await DatabaseConnection.getInstance().sortByCategory(req.params.categoryId);
+        res.json(products);
+        } catch (error) {
+        res.status(500).json({ message: 'Error fetching products by category', error });
+        }
+    });
 
+    app.get('/products/by-category/:categoryName', async (req, res) => {
+        try {
+            const categoryName = req.params.categoryName;
+            const products = await DatabaseConnection.getInstance().getProductsByCategoryName(categoryName);
+            res.json(products);
+        } catch (error) {
+            res.status(500).json({ message: 'Error fetching products by category', error });
+        }
+    });
+    
+  
 
   app.post("/create-order", async (request, response) => {
     try {
@@ -95,7 +100,6 @@ app.put('/products/:id', async (request, response) => {
         await DatabaseConnection.getInstance().updateProduct(request.params.id, request.body);
         response.json({"id": request.params.id, "message": "Product updated successfully"});
     } catch (error) {
-        console.error('Error updating product', error);
         response.status(500).json({"message": "Error updating product", error});
     }
 });

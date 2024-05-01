@@ -15,6 +15,8 @@ export const Admin: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState<IProduct | null>(null);
   const [orders, setOrders] = useState<IOrder[]>([]);
   const [customers, setCustomers] = useState<ICustomer[]>([]); 
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,6 +39,32 @@ export const Admin: React.FC = () => {
       
       .catch(error => console.error('Error fetching customers', error));
   }, []); 
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const endpoint = selectedCategory ? `/products/by-category/${encodeURIComponent(selectedCategory)}` : '/products';
+      try {
+        const response = await axios.get(`http://localhost:3000${endpoint}`);
+        setProducts(response.data);
+      } catch (error) {
+        console.error('Error fetching products', error);
+      }
+    };
+  
+    fetchProducts();
+  }, [selectedCategory]);
+  
+
+
+  useEffect(() => {
+    axios.get('http://localhost:3000/categories')
+      .then(response => {
+        setCategories(response.data);
+        console.log('Categories:', response.data);
+      })
+      .catch(error => console.error('Error fetching categories', error));
+  }, []);
+  
 
     const editProduct = (product: IProduct) => {
         setSelectedProduct(product);
@@ -85,7 +113,12 @@ export const Admin: React.FC = () => {
                     onClose={closeEditModal}
                 />
             )}
-        <ProductsAdmin products={products} onEdit={editProduct} onDelete={deleteProduct} />
+                <ProductsAdmin products={products} 
+                            onEdit={editProduct} 
+                            onDelete={deleteProduct}  
+                            categories={categories}
+                            selectedCategory={selectedCategory}
+                            setSelectedCategory={setSelectedCategory}/>
       </div>
     </div>
   );
