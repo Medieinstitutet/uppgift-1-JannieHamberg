@@ -9,11 +9,13 @@ import { CustomerAdmin } from './CustomersAdmin';
 import { OrdersAdmin } from './OrdersAdmin';
 import { ProductsAdmin } from './ProductsAdmin';
 import { EditProductModal } from '../Modals/EditProduct';
+import { AddProductModal } from '../Modals/AddProduct';
 
 export const Admin: React.FC = () => {
   const [products, setProducts] = useState<IProduct[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<IProduct | null>(null);
   const [orders, setOrders] = useState<IOrder[]>([]);
+  const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [customers, setCustomers] = useState<ICustomer[]>([]); 
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -64,6 +66,26 @@ export const Admin: React.FC = () => {
       })
       .catch(error => console.error('Error fetching categories', error));
   }, []);
+
+
+  const openAddProductModal = () => {
+    setShowAddProductModal(true);
+  };
+
+  const closeAddProductModal = () => {
+    setShowAddProductModal(false);
+  };
+
+  const addProduct = async (product: IProduct) => {
+    try {
+      const response = await axios.post('http://localhost:3000/addproduct', product);
+      setProducts([...products, response.data]);
+      closeAddProductModal();  
+      console.log('Product added', response.data);
+    } catch (error) {
+      console.error('Error adding product', error);
+    }
+  };
   
 
     const editProduct = (product: IProduct) => {
@@ -102,26 +124,35 @@ export const Admin: React.FC = () => {
     <div className="container mt-20 mx-auto px-4 sm:px-8">
       <div className="py-8">
         <h2 className="text-2xl font-semibold leading-tight">Orders</h2>
-         <OrdersAdmin orders={orders} onViewDetails={viewOrderDetails} /> 
+        <OrdersAdmin orders={orders} onViewDetails={viewOrderDetails} /> 
         <h2 className="text-2xl font-semibold leading-tight">Customers</h2>
-         <CustomerAdmin customers={customers} onViewProfile={viewCustomerProfile} />
-         <h2 className="text-2xl font-semibold leading-tight">Products</h2>
-         {selectedProduct && (
-                <EditProductModal
-                    product={selectedProduct}
-                    onSave={saveProduct}
-                    onClose={closeEditModal}
-                />
-            )}
-                <ProductsAdmin products={products} 
-                            onEdit={editProduct} 
-                            onDelete={deleteProduct}  
-                            categories={categories}
-                            selectedCategory={selectedCategory}
-                            setSelectedCategory={setSelectedCategory}/>
+        <CustomerAdmin customers={customers} onViewProfile={viewCustomerProfile} />
+        <h2 className="text-2xl font-semibold leading-tight">Products</h2>
+        {selectedProduct && (
+          <EditProductModal
+            product={selectedProduct}
+            onSave={saveProduct}
+            onClose={closeEditModal}
+          />
+        )}
+        {showAddProductModal && (
+          <AddProductModal
+            onSave={addProduct}
+            onClose={closeAddProductModal}
+            categories={categories}
+          />
+        )}
+        <ProductsAdmin products={products} 
+          onEdit={editProduct} 
+          onDelete={deleteProduct} 
+          onAdd={openAddProductModal} 
+          categories={categories}
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}/>
       </div>
     </div>
   );
 };
+
 
 export default Admin;

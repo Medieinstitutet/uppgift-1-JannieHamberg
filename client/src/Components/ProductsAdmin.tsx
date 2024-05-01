@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { IProduct } from '../Interfaces/IProduct';
 
@@ -6,18 +5,19 @@ interface IProductsAdmin {
   products: IProduct[];
   onEdit: (product: IProduct) => void;
   onDelete: (productId: string) => void;
+  onAdd: () => void;  
   categories: any[];
   selectedCategory: string;
   setSelectedCategory: (category: string) => void;
 }
 
-export const ProductsAdmin: React.FC<IProductsAdmin>= ({ products, onEdit, onDelete, categories,
+export const ProductsAdmin: React.FC<IProductsAdmin>= ({ products, onEdit, onDelete, onAdd, categories,
   selectedCategory,
   setSelectedCategory }) => {
 
     return (
-      <div className="flex flex-col w-full"> 
-          <div className="flex justify-end mb-4"> 
+      <div className="flex flex-col w-full "> 
+          <div className="flex justify-between items-center mb-4"> 
               <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
@@ -28,6 +28,9 @@ export const ProductsAdmin: React.FC<IProductsAdmin>= ({ products, onEdit, onDel
                       <option key={category._id} value={category.name}>{category.name}</option>
                   ))}
               </select>
+              <button onClick={onAdd} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                  Add New Product
+              </button>
           </div>
           <table className="min-w-full leading-normal">
               <thead>
@@ -74,5 +77,3 @@ export const ProductsAdmin: React.FC<IProductsAdmin>= ({ products, onEdit, onDel
   );
 
 };
-
-
