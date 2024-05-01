@@ -174,58 +174,62 @@ async calculateTotalPrice(lineItems) {
         return returnArray;
     }
 
-    async getProductsByCategory(categoryName) {
+    async getCategories() {
+      await this.connect();
+      let db = this.client.db("Webshop");
+      let collection = db.collection("categories");
+      let categories = await collection.find({}).toArray();
+      return categories;
+  }
+  
+
+    async getProductsByCategoryName(categoryName) {
       const db = this.client.db("Webshop");
-      const productsCollection = db.collection("products");
       const categoriesCollection = db.collection("categories");
-      console.log("Category name from request:", categoryName);
-      const category = await categoriesCollection.findOne({ name: categoryName });
-      console.log("Category found in database:", category);
-      if (!category) {
-        
-        return []; 
+      const productsCollection = db.collection("products");
+  
+      const parentCategory = await categoriesCollection.findOne({ name: categoryName });
+      if (!parentCategory) {
+          return []; 
+      }
+
+      const categoryData = await categoriesCollection.aggregate([
+          {
+              $match: { _id: parentCategory._id } 
+          },
+          {
+              $graphLookup: {
+                  from: "categories",
+                  startWith: "$_id",
+                  connectFromField: "_id",  
+                  connectToField: "childOf",  
+                  as: "subcategories"
+              }
+          },
+          {
+              $project: {
+                  categoryIds: {
+                      $concatArrays: [
+                          ["$_id"], 
+                          { $map: { input: "$subcategories", as: "subcat", in: "$$subcat._id" } }
+                      ]
+                  }
+              }
+          }
+      ]).toArray();
+  
+      if (categoryData.length === 0 || !categoryData[0].categoryIds) {
+          return [];
+      }
+      const categoryIds = categoryData[0].categoryIds;
+ 
+      const products = await productsCollection.find({
+          category: { $in: categoryIds }
+      }).toArray();
+  
+      return products;
       }
   
-      const products = await productsCollection.find({ category: category._id }).toArray();
-      console.log("Products found:", products);
-      return products;
-    }
-
-/*     async getFish() {
-        await this.connect();
-
-        let db = this.client.db("Webshop");
-        let collection = db.collection("Fish");
-
-        let pipeline = [
-            {
-              $lookup: {
-                from: "categories",
-                localField: "category",
-                foreignField: "_id",
-                as: "category",
-              },
-            },
-            {
-              $addFields: {
-                category: {
-                  $first: "$category",
-                },
-              },
-            },
-          ];
-
-        let documents = collection.aggregate(pipeline);
-        let returnArray = [];
-
-        for await(let document of documents) {
-            returnArray.push(document);
-        }
-
-        return returnArray;
-    } */
-
-
 
     async getAllOrders() {
         await this.connect();

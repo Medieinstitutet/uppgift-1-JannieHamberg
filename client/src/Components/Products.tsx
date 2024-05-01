@@ -3,13 +3,12 @@ import { Product, useCart } from '../Context/CartContext';
 
 const Products = () => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [filter, setFilter] = useState<string>(''); 
+  const [filter, setFilter] = useState<string>('Fish'); 
   const { addToCart } = useCart();
-  
 
   const fetchProducts = async () => {
     try {
-      const endpoint = filter ? `/filtered-products?category=${encodeURIComponent(filter)}` : '/products';
+      const endpoint = filter ? `/products/by-category/${encodeURIComponent(filter)}` : '/products/by-category/Fish';
       const response = await fetch(`http://localhost:3000${endpoint}`);
       if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -32,21 +31,21 @@ const Products = () => {
           <h1 className="text-2xl mt-4 mb-2 text-black font-semibold">Fish</h1>
           <button
             onClick={() => setFilter('Discus')}
-            className="filter-btn text-white px-4 py-2 rounded  transition duration-300 ease-in-out m-1"
+            className="filter-btn text-white px-4 py-2 rounded transition duration-300 ease-in-out m-1"
           >
             Discus
           </button>
           <button
             onClick={() => setFilter('Koi')}
-            className="filter-btn text-white px-4 py-2 rounded  transition duration-300 ease-in-out m-1"
+            className="filter-btn text-white px-4 py-2 rounded transition duration-300 ease-in-out m-1"
           >
             Koi
           </button>
           <button
-            onClick={() => setFilter('')}
+            onClick={() => setFilter('Fish')}
             className="filter-btn text-white px-4 py-2 rounded transition duration-300 ease-in-out m-1"
           >
-            Show all
+            Show all Fish
           </button>
         </div>
         <div className='products-container-bg w-full flex flex-wrap justify-center gap-4 p-22'>
@@ -60,14 +59,13 @@ const Products = () => {
                 <p>{product.price} SEK</p>
                 <p>{product.description}</p>
                 <div className="card-actions justify-end">
-                  <button className="buy-btn btn text-white pl-10 pr-10 text-l shadow-xl" onClick={() => addToCart(product)}>Köp</button>
+                  <button className="buy-btn btn text-white pl-10 pr-10 text-l shadow-xl" onClick={() => addToCart(product)}>Buy</button>
                 </div>
               </div>
             </div>
           ))}
         </div>
       </div>
-
     </div>
   );
 };

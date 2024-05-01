@@ -8,7 +8,7 @@ const SecondProducts = () => {
 
   const fetchProducts = async () => {
     try {
-      const endpoint = filter ? `/filtered-products?category=${encodeURIComponent(filter)}` : '/products';
+      const endpoint = filter ? `/products/by-category/${encodeURIComponent(filter)}` : '/products/by-category/AquaScaping';
       const response = await fetch(`http://localhost:3000${endpoint}`);
       if (!response.ok) {
         throw new Error('Network response was not ok');

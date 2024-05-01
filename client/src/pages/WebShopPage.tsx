@@ -6,7 +6,7 @@ export const WebShopPage = () => {
     return(
         <>
         <Products />
-       {/*  <SecondProducts /> */}
+        <SecondProducts />
         </>
 
     )
