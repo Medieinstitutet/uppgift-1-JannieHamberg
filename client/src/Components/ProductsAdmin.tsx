@@ -1,5 +1,7 @@
 import React from 'react';
 import { IProduct } from '../Interfaces/IProduct';
+import { FaEdit, FaTrash } from 'react-icons/fa';
+
 
 interface IProductsAdmin {
   products: IProduct[];
@@ -61,13 +63,13 @@ export const ProductsAdmin: React.FC<IProductsAdmin>= ({ products, onEdit, onDel
                           <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                               {product.status}
                           </td>
-                          <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm text-right">
-                              <button onClick={() => onEdit(product)} className="text-indigo-600 hover:text-indigo-900">
-                                  Edit
-                              </button>
-                              <button onClick={() => onDelete(product._id)} className="text-red-600 hover:text-red-900">
-                                  Delete
-                              </button>
+                          <td className="px-5 py-5 border-b border-gray-200 bg-white text-xl text-right">
+                          <button onClick={() => onEdit(product)} className="text-indigo-600 hover:text-indigo-900 mr-8">
+                                <FaEdit />
+                            </button>
+                            <button onClick={() => onDelete(product._id)} className="text-red-600 hover:text-red-900">
+                                <FaTrash />
+                            </button>
                           </td>
                       </tr>
                   ))}

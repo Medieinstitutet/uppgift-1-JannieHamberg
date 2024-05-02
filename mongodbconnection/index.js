@@ -95,6 +95,22 @@ app.post('/addproduct', async (req, res) => {
       res.status(500).json({ message: 'Failed to create product', error: error.message });
     }
   });
+
+  app.delete('/products/:id', async (req, res) => {
+    try {
+        const productId = req.params.id;
+        const success = await DatabaseConnection.getInstance().deleteProduct(productId);
+        if (success) {
+            res.status(200).send({ message: 'Product successfully deleted' });
+        } else {
+            res.status(404).send({ message: 'Product not found' });
+        }
+    } catch (error) {
+        console.error('Error deleting product:', error);
+        res.status(500).send({ message: 'Failed to delete product', error: error.message });
+    }
+});
+
   
 
 app.put('/products/:id', async (req, res) => {
