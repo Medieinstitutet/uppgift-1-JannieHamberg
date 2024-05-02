@@ -106,9 +106,20 @@ export const Admin: React.FC = () => {
     const closeEditModal = () => {
         setSelectedProduct(null);
     };
-    const deleteProduct = (_id: string) => {
-        return _id;
-    };
+
+
+   const deleteProduct = async (id: string) => {
+  if(window.confirm("Are you sure you want to delete this product?")) {
+    try {
+      const response = await axios.delete(`http://localhost:3000/products/${id}`);
+      setProducts(products.filter(product => product._id !== id));
+      console.log('Product deleted', response.data);
+    } catch (error) {
+      console.error('Error deleting product', error);
+    }
+  }
+};
+
 
      const viewOrderDetails = (_id: string) => {
 

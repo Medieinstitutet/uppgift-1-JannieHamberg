@@ -152,6 +152,15 @@ async createProduct(productData) {
       await collection.updateOne({"_id": aId}, {"$set": aData});
     }
 
+    async deleteProduct(productId) {
+      await this.connect();
+      const db = this.client.db("Webshop");
+      const collection = db.collection("products");
+      const result = await collection.deleteOne({ _id: new ObjectId(productId) });
+      return result.deletedCount === 1; 
+  }
+  
+
     async getProducts() {
         await this.connect();
 
