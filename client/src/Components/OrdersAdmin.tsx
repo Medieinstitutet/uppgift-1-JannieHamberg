@@ -35,13 +35,13 @@ export const OrdersAdmin: React.FC<IOrdersAdmin> = ({ orders, onViewDetails }) =
                 {order._id}
               </td>
             <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                {order.orderDate.toString()}
+            {order.orderDate ? new Date(order.orderDate).toLocaleDateString() : 'No date provided'}
             </td>
               <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                 {order.status}
               </td>
               <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                ${order.totalPrice}
+                ${order.total}
               </td>
               <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm text-right">
                 <button

@@ -10,6 +10,7 @@ import { OrdersAdmin } from './OrdersAdmin';
 import { ProductsAdmin } from './ProductsAdmin';
 import { EditProductModal } from '../Modals/EditProduct';
 import { AddProductModal } from '../Modals/AddProduct';
+import { OrderDetailsModal } from '../Modals/OrderDetails';
 
 export const Admin: React.FC = () => {
   const [products, setProducts] = useState<IProduct[]>([]);
@@ -19,28 +20,32 @@ export const Admin: React.FC = () => {
   const [customers, setCustomers] = useState<ICustomer[]>([]); 
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedOrder, setSelectedOrder] = useState(null);
+
   const navigate = useNavigate();
 
   useEffect(() => {
     axios.get('http://localhost:3000/products')
       .then(response => setProducts(response.data))
       .catch(error => console.error('Error fetching products', error));
-  }, []);
 
-  useEffect(() => {
+      axios.get('http://localhost:3000/categories')
+      .then(response => {
+        setCategories(response.data);
+        console.log('Categories:', response.data);
+      })
+      .catch(error => console.error('Error fetching categories', error));
 
-    axios.get('http://localhost:3000/orders')
+      axios.get('http://localhost:3000/orders')
       .then(response => setOrders(response.data))
       .catch(error => console.error('Error fetching orders', error));
-  }, []);
 
-  useEffect(() => {
-  
-    axios.get('http://localhost:3000/customers')
+      axios.get('http://localhost:3000/customers')
       .then(response => setCustomers(response.data))
       
       .catch(error => console.error('Error fetching customers', error));
-  }, []); 
+  }, []);
+
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -56,17 +61,6 @@ export const Admin: React.FC = () => {
     fetchProducts();
   }, [selectedCategory]);
   
-
-
-  useEffect(() => {
-    axios.get('http://localhost:3000/categories')
-      .then(response => {
-        setCategories(response.data);
-        console.log('Categories:', response.data);
-      })
-      .catch(error => console.error('Error fetching categories', error));
-  }, []);
-
 
   const openAddProductModal = () => {
     setShowAddProductModal(true);
@@ -118,13 +112,20 @@ export const Admin: React.FC = () => {
       console.error('Error deleting product', error);
     }
   }
+}; /* TODO fix bug on not deleting if properites are missing in object */
+
+
+const viewOrderDetails = async (id: string) => {
+  try {
+    const response = await axios.get(`http://localhost:3000/orders/${id}`);
+    const data = await response.data;
+    setSelectedOrder(data);
+    console.log(data);
+  } catch (error) {
+    console.error('Failed to fetch order details', error);
+  }
 };
 
-
-     const viewOrderDetails = (_id: string) => {
-
-    navigate(`/orders/${_id}`);
-  }; 
 
    const viewCustomerProfile = (customerId: string) => {
     
@@ -135,7 +136,11 @@ export const Admin: React.FC = () => {
     <div className="container mt-20 mx-auto px-4 sm:px-8">
       <div className="py-8">
         <h2 className="text-2xl font-semibold leading-tight">Orders</h2>
-        <OrdersAdmin orders={orders} onViewDetails={viewOrderDetails} /> 
+        <OrdersAdmin orders={orders} onViewDetails={viewOrderDetails}/>
+        {selectedOrder && (
+    <OrderDetailsModal order={selectedOrder} onClose={() => setSelectedOrder(null)} />
+)}
+
         <h2 className="text-2xl font-semibold leading-tight">Customers</h2>
         <CustomerAdmin customers={customers} onViewProfile={viewCustomerProfile} />
         <h2 className="text-2xl font-semibold leading-tight">Products</h2>
@@ -144,6 +149,8 @@ export const Admin: React.FC = () => {
             product={selectedProduct}
             onSave={saveProduct}
             onClose={closeEditModal}
+            categories={categories}  
+            
           />
         )}
         {showAddProductModal && (

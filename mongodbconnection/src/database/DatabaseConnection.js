@@ -23,69 +23,75 @@ class DatabaseConnection {
     }
 
 
-
-async createCustomer(email) {
+async createLineItems(items, orderId) {
   await this.connect();
   let db = this.client.db("Webshop");
-  let customersCollection = db.collection("customers");
-
-
-  let customer = await customersCollection.findOne({ _id: email });
-  if (customer) {
-    return customer._id;
-  }
-
+  const lineItemsCollection = db.collection("lineItems"); 
   
-  let result = await customersCollection.insertOne({ _id: email });
-  return result.insertedId;
-}
-
-
-async saveOrder(lineItems, customerEmail) {
-  await this.connect();
-
-  const db = this.client.db("Webshop");
-  const ordersCollection = db.collection("orders");
-  const lineItemsCollection = db.collection("lineItems");
-  const customersCollection = db.collection("customers");
-
-
-  let customer = await customersCollection.findOne({ _id: customerEmail });
-  if (!customer) {
-   
-    const newCustomerResult = await customersCollection.insertOne({ _id: customerEmail });
-    customer = { _id: customerEmail, ...newCustomerResult }; 
-  }
-
-  const totalPrice = await this.calculateTotalPrice(lineItems);
-
-  
-  const orderResult = await ordersCollection.insertOne({
-    customer: customer._id,
-    orderDate: new Date(),
-    status: 'unpaid',
-    totalPrice: totalPrice,
-    paymentId: null
-  });
-
-  const orderId = orderResult.insertedId;
-
-
-  const encodedLineItems = lineItems.map((lineItem) => ({
-    amount: lineItem.amount,
-    totalPrice: lineItem.totalPrice, 
-    order: orderId,
-    product: new mongodb.ObjectId(lineItem.product),
+  const lineItems = items.map(item => ({
+      product: item.product_id,
+      amount: item.amount,
+      totalPrice: item.amount * item.price,
+      order: orderId
   }));
-
-
-  await lineItemsCollection.insertMany(encodedLineItems);
-
-  return orderId;
+  
+  try {
+      await lineItemsCollection.insertMany(lineItems);
+  } catch (error) {
+      console.error('Failed to create line items:', error);
+      throw error;
+  }
 }
+
+
+async registerCustomer(customerData) {
+  await this.connect();
+  let db = this.client.db("Webshop"); 
+  let customersCollection = db.collection("customers"); 
+
+
+  const customerWithId = {
+      _id: customerData.email,  
+      firstName: customerData.firstName,
+      lastName: customerData.lastName,
+      password: customerData.password,
+      address: {
+          address1: customerData.address.address1,
+          address2: customerData.address.address2 || "", 
+          city: customerData.address.city,
+          zipcode: customerData.address.zipcode,
+          country: customerData.address.country
+      }
+  };
+
+  try {
+      const result = await customersCollection.insertOne(customerWithId);
+      return result.insertedId; 
+  } catch (error) {
+      throw new Error('Error registering customer: ' + error.message);
+  }
+}
+
+
+async createOrder(orderData) {
+  await this.connect();
+  let db = this.client.db("Webshop");
+  let ordersCollection = db.collection("orders");
+
+  const { items, ...orderDetails } = orderData;
+
+  try {
+      const result = await ordersCollection.insertOne(orderDetails);
+      return result.insertedId; 
+  } catch (error) {
+      throw new Error('Error creating order: ' + error.message);
+  }
+}
+
 
 
 async calculateTotalPrice(lineItems) {
+  await this.connect();
   let totalPrice = 0;
   let db = this.client.db("Webshop");
   let productsCollection = db.collection("products");
@@ -97,8 +103,6 @@ async calculateTotalPrice(lineItems) {
 
   return totalPrice;
 }
-
-
 
 
 
@@ -129,8 +133,6 @@ async createProduct(productData) {
 
         let db = this.client.db("Webshop");
         let collection = db.collection("products");
-
-        console.log("Updating product with ID:", id, "Data:", productData);
 
         await collection.updateOne({"_id": new mongodb.ObjectId(id)}, {"$set": {
             "name": productData["name"],
@@ -250,9 +252,9 @@ async createProduct(productData) {
   
       return products;
       }
-  
 
-    async getAllOrders() {
+
+      async getAllOrders() {
         await this.connect();
 
         let db = this.client.db("Webshop");
@@ -305,11 +307,58 @@ async createProduct(productData) {
         let returnArray = [];
 
         for await(let document of documents) {
+          console.log(document);
             returnArray.push(document);
         }
 
         return returnArray;
     }
+  
+      async getOrderDetails() {
+        await this.connect();
+        const db = this.client.db("Webshop");
+        const collection = db.collection("orders");
+    
+        const pipeline = [
+            {
+                $lookup: {
+                    from: "lineItems",
+                    localField: "_id",
+                    foreignField: "order",
+                    as: "items"
+                }
+            },
+            { $unwind: "$items" },
+            {
+                $lookup: {
+                    from: "products",
+                    localField: "items.product",
+                    foreignField: "_id",
+                    as: "items.productDetails"
+                }
+            },
+            { $unwind: "$items.productDetails" },
+            {
+                $addFields: {
+                    "items.productName": "$items.productDetails.name",
+                    "items.productPrice": "$items.productDetails.price"
+                }
+            },
+            {
+                $group: {
+                    _id: "$_id",
+                    items: { $push: "$items" },
+                    orderDate: { $first: "$orderDate" },
+                    status: { $first: "$status" },
+                    customer: { $first: "$customer" },
+                    total: { $first: "$totalPrice" }
+                }
+            }
+        ];
+    
+        return await collection.aggregate(pipeline).toArray();
+    }
+
 
     async getCustomers() {
       await this.connect();

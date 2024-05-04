@@ -4,7 +4,7 @@ export interface IOrder {
     _id: string;
     orderDate: Date;
     status: 'paid' | 'unpaid'; 
-    totalPrice: number;
+    total: number;
     paymentId?: string; 
     customer: string;
     items: IOrderItem[]; 
