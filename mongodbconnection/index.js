@@ -20,6 +20,17 @@ app.get("/orders", async (req, res) => {
     }
 );
 
+app.get('/orders/:id', async (req, res) => {
+    try {
+        const order = await DatabaseConnection.getInstance().getOrderDetails(req.params.id);
+        res.json(order[0]);
+    } catch (error) {
+        console.error('Failed to fetch order details:', error);
+        res.status(500).send({ message: 'Error fetching order details', error });
+    }
+});
+
+
 app.get("/products", async (req, res) => {
 
     let products = await DatabaseConnection.getInstance().getProducts();
@@ -57,23 +68,36 @@ app.get("/products", async (req, res) => {
             res.status(500).json({ message: 'Error fetching products by category', error });
         }
     });
-    
-  
 
-  app.post("/create-order", async (req, res) => {
+
+
+app.post('/register-customer', async (req, res) => {
     try {
-   
-      let customerId = await DatabaseConnection.getInstance().createCustomer(req.body.email);
-  
-     
-      let orderId = await DatabaseConnection.getInstance().saveOrder(req.body.lineItems, customerId);
-  
-      res.json({ "id": orderId });
+        const customerId = await DatabaseConnection.getInstance().registerCustomer(req.body);
+        res.status(201).send({ message: 'Customer registered successfully', _id: customerId });
     } catch (error) {
-   
-      res.status(500).json({ message: "An error occurred during order creation", error: error.message });
+        console.error('Error registering customer:', error);
+        if (error.message.includes('duplicate key')) {
+            res.status(409).send({ message: 'Email already registered', error: error.message });
+        } else {
+            res.status(500).send({ message: 'Failed to register customer', error: error.message });
+        }
     }
-  });
+});
+
+
+app.post('/create-order', async (req, res) => {
+    try {
+        const orderId = await DatabaseConnection.getInstance().createOrder(req.body);
+        await DatabaseConnection.getInstance().createLineItems(req.body.items, orderId);
+        res.status(201).send({ message: 'Order and line items created successfully', orderId });
+    } catch (error) {
+        console.error('Error creating order or line items:', error);
+        res.status(500).send({ message: 'Failed to create order', error: error.toString() });
+    }
+});
+
+
 
   app.get("/customers", async (req, res) => {
     try {

@@ -1,11 +1,18 @@
-import { IOrder } from "./IOrder";
 
 export interface IOrderItem {
     _id: string;
-    productId: string;
+    productId: string;  
     amount: number;
-    totalPrice: number; 
-    order: IOrder["_id"];
+    total: number;
+    order: string; 
+    productDetails: {
+        name: string;
+        price: number;
+        description?: string;
+        image?: string;
+        amountInStock?: number;
+        status?: string;
+        categoryName?: string; 
+    };
+}
 
-  }
-  
