@@ -20,7 +20,8 @@ export const Admin: React.FC = () => {
   const [customers, setCustomers] = useState<ICustomer[]>([]); 
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState<IOrder | null>(null);
+
 
   const navigate = useNavigate();
 
@@ -116,15 +117,25 @@ export const Admin: React.FC = () => {
 
 
 const viewOrderDetails = async (id: string) => {
+  console.log("Called viewOrderDetails with ID:", id);
   try {
     const response = await axios.get(`http://localhost:3000/orders/${id}`);
     const data = await response.data;
-    setSelectedOrder(data);
-    console.log(data);
+    console.log("Data received from server:", data);
+    if (!data) {
+      console.error('No order details found');
+      setSelectedOrder(null); 
+    } else {
+      setSelectedOrder(data);
+      console.log("selectedOrder state set to:", data); 
+      console.log(data);
+    }
   } catch (error) {
     console.error('Failed to fetch order details', error);
+    setSelectedOrder(null);
   }
 };
+
 
 
    const viewCustomerProfile = (customerId: string) => {

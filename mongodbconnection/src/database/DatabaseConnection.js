@@ -314,50 +314,51 @@ async createProduct(productData) {
         return returnArray;
     }
   
-      async getOrderDetails() {
-        await this.connect();
-        const db = this.client.db("Webshop");
-        const collection = db.collection("orders");
-    
-        const pipeline = [
-            {
-                $lookup: {
-                    from: "lineItems",
-                    localField: "_id",
-                    foreignField: "order",
-                    as: "items"
-                }
-            },
-            { $unwind: "$items" },
-            {
-                $lookup: {
-                    from: "products",
-                    localField: "items.product",
-                    foreignField: "_id",
-                    as: "items.productDetails"
-                }
-            },
-            { $unwind: "$items.productDetails" },
-            {
-                $addFields: {
-                    "items.productName": "$items.productDetails.name",
-                    "items.productPrice": "$items.productDetails.price"
-                }
-            },
-            {
-                $group: {
-                    _id: "$_id",
-                    items: { $push: "$items" },
-                    orderDate: { $first: "$orderDate" },
-                    status: { $first: "$status" },
-                    customer: { $first: "$customer" },
-                    total: { $first: "$totalPrice" }
-                }
-            }
-        ];
-    
-        return await collection.aggregate(pipeline).toArray();
-    }
+    async getOrderDetails(orderId) {
+      await this.connect();
+      const db = this.client.db("Webshop");
+      const collection = db.collection("orders");
+  
+     
+      const pipeline = [
+        { $match: { _id: new ObjectId(orderId) } },
+        { $lookup: {
+            from: "lineItems",
+            localField: "_id",
+            foreignField: "order",
+            as: "items"
+          }
+        },
+        { $unwind: "$items" },
+        { $lookup: {
+          from: "products",
+          let: { productId: { $toObjectId: "$items.product" } }, 
+          pipeline: [
+            { $match: { $expr: { $eq: ["$_id", "$$productId"] } } }
+          ],
+          as: "items.productDetails"
+      }},
+       
+        { $addFields: {
+            "items.productDetails": { $ifNull: [{ $arrayElemAt: ["$items.productDetails", 0] }, null] }
+          }
+        },
+        { $group: {
+            _id: "$_id",
+            orderDate: { $first: "$orderDate" },
+            status: { $first: "$status" },
+            customer: { $first: "$customer" },
+            total: { $first: "$totalPrice" },
+            items: { $push: "$items" }
+          }
+        }
+      ];
+      
+      const results = await collection.aggregate(pipeline).toArray();
+      console.log("Aggregation results:", results);
+      return results;
+      
+      }        
 
 
     async getCustomers() {
