@@ -1,6 +1,8 @@
 let express = require("express");
 const cors = require('cors');
 let DatabaseConnection = require("./src/database/DatabaseConnection");
+const { ObjectId } = require('mongodb');
+
 
 let url = 'mongodb://localhost:27017';
 
@@ -21,15 +23,26 @@ app.get("/orders", async (req, res) => {
 );
 
 app.get('/orders/:id', async (req, res) => {
+    const { id } = req.params;
+    if (!ObjectId.isValid(id)) {
+        return res.status(400).send({ message: 'Invalid order ID format' });
+    }
+
     try {
-        const order = await DatabaseConnection.getInstance().getOrderDetails(req.params.id);
+        console.log(`Fetching details for order ID: ${id}`); 
+        const order = await DatabaseConnection.getInstance().getOrderDetails(id);
+        console.log('Order details:', order); 
+
+        if (!order || order.length === 0) {
+            return res.status(404).send({ message: 'Order not found' });
+        }
+
         res.json(order[0]);
     } catch (error) {
         console.error('Failed to fetch order details:', error);
         res.status(500).send({ message: 'Error fetching order details', error });
     }
 });
-
 
 app.get("/products", async (req, res) => {
 
